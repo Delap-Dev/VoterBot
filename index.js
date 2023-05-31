@@ -114,58 +114,86 @@ const lastNames = [
   "Murphy",
   "Bailey",
 ];
+const MAX_RETRIES = 10;
 
+const generateRandomNumber = () => {
+  return Math.floor(Math.random() * 10000); // Generate random number up to 4 digits long
+};
+const randomNumber = generateRandomNumber();
 const randomNum = (num) => Math.floor(Math.random() * num);
 const generateRandomName = (arr) => arr[randomNum(arr.length)];
+// const generateRandomEmail = (firstName, lastName) =>
+//   firstName.charAt(0) + lastName + "@" + domains[randomNum(domains.length)];
+// const generateRandomEmail = (firstName, lastName) =>
+//   firstName + lastName + "@" + domains[randomNum(domains.length)];
 const generateRandomEmail = (firstName, lastName) =>
-  firstName.charAt(0) + lastName + "@" + domains[randomNum(domains.length)];
+  firstName +
+  lastName +
+  randomNumber +
+  "@" +
+  domains[randomNum(domains.length)];
 
 (async () => {
-  for (let i = 0; i < 155; i++) {
-    // make a new random name
-    const name = {
-      first: generateRandomName(firstNames),
-      last: generateRandomName(lastNames),
-    };
+  let retries = 0;
 
-    // Launch the browser
-    const browser = await puppeteer.launch({
-      headless: true,
-    });
+  while (retries < MAX_RETRIES) {
+    try {
+      for (let i = 0; i < 300; i++) {
+        console.log("Starting run " + i + " Retries: " + retries);
 
-    // Open a new page
-    const page = await browser.newPage();
+        // make a new random name
+        const name = {
+          first: generateRandomName(firstNames),
+          last: generateRandomName(lastNames),
+        };
 
-    // Navigate to the desired URL
-    await page.goto("https://woobox.com/3a7r6e");
+        // Launch the browser
+        const browser = await puppeteer.launch({
+          headless: "new",
+        });
 
-    // Target and trigger the click event on the button with data-id="33"
-    await page.evaluate(() => {
-      const button = document.querySelector('button[data-id="33"]');
-      button.click();
-    });
+        // Open a new page
+        const page = await browser.newPage();
 
-    // Fill in the first name field
-    await page.type("#custom_2_first", String(name.first));
+        // Navigate to the desired URL
+        await page.goto("https://woobox.com/3a7r6e");
 
-    // Fill in the last name field
-    await page.type("#custom_2_last", name.last);
+        // Target and trigger the click event on the button with data-id="33"
+        await page.evaluate(() => {
+          const button = document.querySelector('button[data-id="33"]');
+          button.click();
+        });
 
-    // Fill in the email field
-    await page.type("#email_id", generateRandomEmail(name.first, name.last));
+        // Fill in the first name field
+        await page.type("#custom_2_first", String(name.first));
 
-    // Target and trigger the click event on the submit button
-    await page.evaluate(() => {
-      const submitButton = document.querySelector(
-        'input[type="submit"][id="actionbutton"]'
-      );
-      submitButton.click();
-    });
+        // Fill in the last name field
+        await page.type("#custom_2_last", name.last);
 
-    // Wait for a moment to observe the result
-    await page.waitForTimeout(2000);
+        // Fill in the email field
+        await page.type(
+          "#email_id",
+          generateRandomEmail(name.first, name.last)
+        );
+        // Target and trigger the click event on the submit button
+        await page.evaluate(() => {
+          const submitButton = document.querySelector(
+            'input[type="submit"][id="actionbutton"]'
+          );
+          submitButton.click();
+        });
 
-    // Close the browser
-    await browser.close();
+        // Wait for a moment to observe the result
+        await page.waitForTimeout(2000);
+
+        // Close the browser
+        await browser.close();
+        console.log("Finishing run " + i + " Retries: " + retries);
+      }
+      console.log("Finishing run " + i);
+    } catch (error) {
+      console.log(`An error occurred (retry ${retries + 1}):`, error);
+      retries++;
+    }
   }
 })();
