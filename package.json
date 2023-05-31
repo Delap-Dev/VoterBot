@@ -4,7 +4,7 @@
   "description": "",
   "main": "vote.js",
   "scripts": {
-    "test": "npm test"
+    "start": "node ./index.js"
   },
   "author": "Delap",
   "license": "ISC",
